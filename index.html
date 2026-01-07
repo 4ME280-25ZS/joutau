@@ -9,9 +9,7 @@
             font-family: 'Helvetica', sans-serif;
         color: #373B3F;
             background: linear-gradient(to bottom, #CF9771, #373B3F);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative;
             height: 100vh;
             margin: 0;
         }
@@ -23,26 +21,14 @@
             padding: 20px;
             max-width: 400px;
             text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: float 3s ease-in-out infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         .card:hover {
-            transform: scale(1.1);
             box-shadow: 0 10px 20px rgba(55,59,63,0.3), 0 0 30px rgba(207,151,113,0.5);
             filter: brightness(1.1);
-            animation-play-state: paused;
-        }
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-        .card h1 {
-            margin-bottom: 10px;
-            color: #333;
         }
         .card p {
             margin: 5px 0;
@@ -56,6 +42,14 @@
             text-decoration: underline;
         }
     </style>
+    <script>
+        document.addEventListener('mousemove', function(e) {
+            const card = document.querySelector('.card');
+            const x = e.clientX - window.innerWidth / 2;
+            const y = e.clientY - window.innerHeight / 2;
+            card.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    </script>
 </head>
 <body>
     <div class="card">
