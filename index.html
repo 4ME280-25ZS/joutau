@@ -43,12 +43,24 @@
         }
     </style>
     <script>
+        const card = document.querySelector('.card');
+        let currentX = 0;
+        let currentY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
         document.addEventListener('mousemove', function(e) {
-            const card = document.querySelector('.card');
-            const x = e.clientX - window.innerWidth / 2;
-            const y = e.clientY - window.innerHeight / 2;
-            card.style.transform = `translate(${x}px, ${y}px)`;
+            targetX = e.clientX - window.innerWidth / 2;
+            targetY = e.clientY - window.innerHeight / 2;
         });
+
+        function animate() {
+            currentX += (targetX - currentX) * 0.1;
+            currentY += (targetY - currentY) * 0.1;
+            card.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            requestAnimationFrame(animate);
+        }
+        animate();
     </script>
 </head>
 <body>
