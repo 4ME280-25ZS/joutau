@@ -23,11 +23,21 @@
             max-width: 400px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: float 3s ease-in-out infinite;
         }
         .card:hover {
             transform: scale(1.1);
             box-shadow: 0 10px 20px rgba(55,59,63,0.3), 0 0 30px rgba(207,151,113,0.5);
             filter: brightness(1.1);
+            animation-play-state: paused;
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
         }
         .card h1 {
             margin-bottom: 10px;
