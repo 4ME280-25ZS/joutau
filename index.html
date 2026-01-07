@@ -22,36 +22,24 @@
     footer { margin-top: 18px; color: #666; font-size: 13px; }
     code { background: #f6f6f6; padding: 2px 6px; border-radius: 8px; }
   </style>
+
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <h1>Wishlist 🎁</h1>
-  <p class="sub">Dárky se načítají z <code>data.json</code>. (Rezervace jsou zatím jen v tvém prohlížeči.)</p>
+  <p class="sub">Dárky se načítají z <code>data.json</code>. Rezervace jsou sdílené (Supabase).</p>
 
   <div id="err" class="err"></div>
   <ul id="list"></ul>
 
   <footer>
-    Další krok: udělat rezervace sdílené pro všechny (Supabase/Firebase).
+    Tip: Otevři stránku v anonymním okně a uvidíš stejné rezervace.
   </footer>
 
   <script>
     const listEl = document.getElementById("list");
     const errEl = document.getElementById("err");
-
-    // Rezervace zatím jen lokálně v prohlížeči (pro tebe), ne sdíleně.
-    const STORAGE_KEY = "wishlist_reservations_v1";
-
-    function loadReservations() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      } catch {
-        return {};
-      }
-    }
-
-    function saveReservations(map) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
-    }
 
     function showError(msg) {
       errEl.style.display = "block";
@@ -60,8 +48,43 @@
 
     async function loadGifts() {
       const res = await fetch("./data.json", { cache: "no-store" });
-      if (!res.ok) throw new Error("Nejde načíst data.json (zkontroluj, že je v rootu repa a je validní JSON).");
+      if (!res.ok) throw new Error("Nejde načíst data.json (musí být v rootu repa a validní JSON).");
       return await res.json();
+    }
+
+    // ✅ Tvoje hodnoty:
+    const SUPABASE_URL = "https://frdxkxffonflwhbzbnwq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_2QalCJL0wUoW5XNgw14ehg_cvovi0lb";
+
+    // Supabase client (CDN dává globální objekt `supabase`)
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadReservations() {
+      const { data, error } = await sb
+        .from("reservations")
+        .select("gift_id, reserved_by");
+
+      if (error) throw error;
+
+      const map = {};
+      for (const r of data) map[String(r.gift_id)] = r.reserved_by;
+      return map;
+    }
+
+    async function reserveGift(giftId, name) {
+      const { error } = await sb.from("reservations").insert({
+        gift_id: giftId,
+        reserved_by: name
+      });
+
+      if (error) {
+        // Nejčastější: už je zamluveno (primary key = gift_id)
+        if (String(error.code) === "23505") {
+          alert("Tenhle dárek už je zamluvený někým jiným. Dej refresh.");
+          return;
+        }
+        throw error;
+      }
     }
 
     function render(gifts, reservations) {
@@ -96,16 +119,18 @@
         btn.textContent = "Zamluvit";
         btn.disabled = Boolean(reservedBy);
 
-        btn.addEventListener("click", () => {
-          const name = prompt("Jak se jmenuješ?");
-          if (!name) return;
+        btn.addEventListener("click", async () => {
+          try {
+            const name = prompt("Jak se jmenuješ?");
+            if (!name) return;
+            const clean = name.trim();
+            if (!clean) return;
 
-          const clean = name.trim();
-          if (!clean) return;
-
-          reservations[String(g.id)] = clean;
-          saveReservations(reservations);
-          render(gifts, reservations);
+            await reserveGift(g.id, clean);
+            await refresh(); // znovu načíst sdílené rezervace
+          } catch (e) {
+            showError("Chyba při ukládání: " + (e.message || JSON.stringify(e)));
+          }
         });
 
         right.append(badge, btn);
@@ -114,11 +139,15 @@
       }
     }
 
+    async function refresh() {
+      const reservations = await loadReservations();
+      render(window.__GIFTS__, reservations);
+    }
+
     (async () => {
       try {
-        const gifts = await loadGifts();
-        const reservations = loadReservations();
-        render(gifts, reservations);
+        window.__GIFTS__ = await loadGifts();
+        await refresh();
       } catch (e) {
         showError(e.message || String(e));
       }
