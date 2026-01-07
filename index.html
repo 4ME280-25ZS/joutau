@@ -32,11 +32,20 @@
             animation-play-state: paused;
         }
         @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-5px) rotate(0.5deg);
             }
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-10px) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-5px) rotate(-0.5deg);
+            }
+            100% {
+                transform: translateY(0) rotate(0deg);
             }
         }
         .card h1 {
