@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
   <meta charset="utf-8" />
@@ -17,31 +17,56 @@
     .badge { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: #f2f2f2; color: #333; white-space: nowrap; }
     button { padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
     button:hover { background: #f7f7f7; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
+    .err { background: #fff2f2; border: 1px solid #ffcccc; padding: 10px 12px; border-radius: 12px; color: #7a1b1b; margin-bottom: 12px; display:none; }
     footer { margin-top: 18px; color: #666; font-size: 13px; }
+    code { background: #f6f6f6; padding: 2px 6px; border-radius: 8px; }
   </style>
 </head>
 <body>
   <h1>Wishlist 🎁</h1>
-  <p class="sub">Seznam dárků. (Zatím jen “dummy” verze – další krok bude ukládat rezervace.)</p>
+  <p class="sub">Dárky se načítají z <code>data.json</code>. (Rezervace jsou zatím jen v tvém prohlížeči.)</p>
 
+  <div id="err" class="err"></div>
   <ul id="list"></ul>
 
   <footer>
-    Tip: Teď jen ověř, že se to zobrazuje na GitHub Pages. Pak přejdeme na “rezervace”.
+    Další krok: udělat rezervace sdílené pro všechny (Supabase/Firebase).
   </footer>
 
   <script>
-    // 1) ZATÍM: dárky jsou natvrdo v kódu (hardcoded).
-    const gifts = [
-      { id: 1, name: "Lego set", note: "něco malého, klidně 200–500 Kč", reservedBy: "" },
-      { id: 2, name: "Kniha", note: "sci-fi / cyberpunk", reservedBy: "Petr" },
-      { id: 3, name: "Kávové zrno", note: "espresso roast, 250g", reservedBy: "" }
-    ];
-
     const listEl = document.getElementById("list");
+    const errEl = document.getElementById("err");
 
-    function render() {
+    // Rezervace zatím jen lokálně v prohlížeči (pro tebe), ne sdíleně.
+    const STORAGE_KEY = "wishlist_reservations_v1";
+
+    function loadReservations() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveReservations(map) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    }
+
+    function showError(msg) {
+      errEl.style.display = "block";
+      errEl.textContent = msg;
+    }
+
+    async function loadGifts() {
+      const res = await fetch("./data.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("Nejde načíst data.json (zkontroluj, že je v rootu repa a je validní JSON).");
+      return await res.json();
+    }
+
+    function render(gifts, reservations) {
       listEl.innerHTML = "";
+
       for (const g of gifts) {
         const li = document.createElement("li");
 
@@ -61,32 +86,43 @@
         const right = document.createElement("div");
         right.className = "right";
 
+        const reservedBy = reservations[String(g.id)] || "";
+
         const badge = document.createElement("div");
         badge.className = "badge";
-        badge.textContent = g.reservedBy ? `Zamluveno: ${g.reservedBy}` : "Volné";
+        badge.textContent = reservedBy ? `Zamluveno: ${reservedBy}` : "Volné";
 
         const btn = document.createElement("button");
         btn.textContent = "Zamluvit";
-        btn.disabled = Boolean(g.reservedBy);
-        btn.title = g.reservedBy ? "Už je zamluveno" : "Zamluvit tento dárek";
+        btn.disabled = Boolean(reservedBy);
 
-        // 2) ZATÍM: klik jen “simuluje” rezervaci v paměti (po refreshi zmizí).
         btn.addEventListener("click", () => {
           const name = prompt("Jak se jmenuješ?");
           if (!name) return;
-          g.reservedBy = name.trim();
-          render();
+
+          const clean = name.trim();
+          if (!clean) return;
+
+          reservations[String(g.id)] = clean;
+          saveReservations(reservations);
+          render(gifts, reservations);
         });
 
         right.append(badge, btn);
         li.append(left, right);
-
         listEl.append(li);
       }
     }
 
-    render();
+    (async () => {
+      try {
+        const gifts = await loadGifts();
+        const reservations = loadReservations();
+        render(gifts, reservations);
+      } catch (e) {
+        showError(e.message || String(e));
+      }
+    })();
   </script>
 </body>
 </html>
-
