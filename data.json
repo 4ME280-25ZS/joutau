@@ -1,0 +1,14 @@
+[
+  { "id": 1, "name": "Lego set", "note": "něco malého, klidně 200–500 Kč" },
+  { "id": 2, "name": "Kniha", "note": "sci-fi / cyberpunk (cokoliv od Gibsona nebo Lema)" },
+  { "id": 3, "name": "Kávové zrno", "note": "espresso roast, 250g (ne moc tmavé)" },
+  { "id": 4, "name": "Ponožky", "note": "černé / bílé, jednoduché, velikost 43–46" },
+  { "id": 5, "name": "Termohrnek / cestovní hrnek", "note": "cca 350–500 ml, aby netekl" },
+  { "id": 6, "name": "Notýsek", "note": "A5, čistý nebo tečkovaný" },
+  { "id": 7, "name": "Svíčka", "note": "spíš decentní vůně (vanilka / dřevo), ne extrémně sladká" },
+  { "id": 8, "name": "Tričko", "note": "černé, basic, velikost L" },
+  { "id": 9, "name": "Powerbanka", "note": "aspoň 10 000 mAh, USB-C" },
+  { "id": 10, "name": "Bezdrátová myš", "note": "ideálně tichá, Bluetooth nebo 2.4 GHz" },
+  { "id": 11, "name": "Kabel USB-C", "note": "1–2 m, kvalitnější opletený" },
+  { "id": 12, "name": "Poukaz / dárková karta", "note": "knihkupectví / kavárna (cokoliv praktického)" }
+]
